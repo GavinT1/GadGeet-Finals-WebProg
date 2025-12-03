@@ -2102,42 +2102,52 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
     }
 }, [user]);   
 
-const handleRemoveItem = useCallback(async (id) => {
-    // 1. Find the item in the local cart
-    const itemToRemove = cart.find(item => item.id === id);
+// --- FIXED REMOVE ITEM (Smart Lookup) ---
+    const handleRemoveItem = useCallback(async (id) => {
+        // 1. Find the item in the local cart using a "Smart Search"
+        // (Checks for id, product._id, or product string)
+        const itemToRemove = cart.find(item => 
+            String(item.id) === String(id) || 
+            String(item.product) === String(id) || 
+            String(item.product?._id) === String(id) ||
+            String(item.productId) === String(id)
+        );
 
-    // 2. Determine the correct Variant ID to delete
-    let variantIdToDelete = itemToRemove?.variant;
-
-    // FALLBACK: If the cart item doesn't have the variant ID (e.g. from an old session),
-    // look it up in the products list.
-    if (!variantIdToDelete || variantIdToDelete === 'Standard') {
-        const productRef = products.find(p => p.id === id);
-        if (productRef && productRef.variants && productRef.variants.length > 0) {
-            // Default to the first variant if we can't find a specific one
-            variantIdToDelete = productRef.variants[0]._id || productRef.variants[0].id;
+        if (!itemToRemove) {
+            console.warn("Could not find item to delete in local state.");
+            return;
         }
-    }
 
-    console.log("Deleting Variant ID:", variantIdToDelete); // Check your console for this!
+        // 2. Determine the correct Variant ID to delete
+        let variantIdToDelete = itemToRemove.variant || itemToRemove.variantId;
 
-    // 3. Optimistic Update (Remove from UI immediately)
-    setCart(prevCart => prevCart.filter(item => item.id !== id));
-
-    // 4. Sync with Backend
-    if (user && variantIdToDelete) {
-        try {
-            await api.delete(`/cart/${variantIdToDelete}`);
-        } catch (err) {
-            console.error("Failed to remove from backend", err);
-            // Optional: Fetch cart again to revert changes if it failed
-            // const { data } = await api.get('/cart');
-            // setCart(data);
+        // FALLBACK: If missing, try to find it in the products list
+        if (!variantIdToDelete || variantIdToDelete === 'Standard') {
+            const productRef = products.find(p => String(p.id) === String(id) || String(p._id) === String(id));
+            if (productRef && productRef.variants && productRef.variants.length > 0) {
+                variantIdToDelete = productRef.variants[0]._id || productRef.variants[0].id;
+            }
         }
-    } else {
-        console.warn("Skipped Backend Delete: No Variant ID found.");
-    }
-}, [cart, user, products]);
+
+        console.log("Deleting Item:", id, "Variant:", variantIdToDelete);
+
+        // 3. Optimistic Update (Remove from UI immediately)
+        // We filter out the item that matches the ID we passed in
+        setCart(prevCart => prevCart.filter(item => 
+            String(item.id) !== String(id) && 
+            String(item.product) !== String(id) &&
+            String(item.product?._id) !== String(id)
+        ));
+
+        // 4. Sync with Backend
+        if (user && variantIdToDelete) {
+            try {
+                await api.delete(`/cart/${variantIdToDelete}`);
+            } catch (err) {
+                console.error("Failed to remove from backend", err);
+            }
+        }
+    }, [cart, user, products]);
 
 // --- FIXED Checkout Click ---
 const handleCheckoutClick = useCallback(() => {
@@ -2157,41 +2167,55 @@ const handleCheckoutClick = useCallback(() => {
     setView('checkout');
 }, [cart]);
 
-const handleUpdateQuantity = useCallback(async (id, delta) => {
-    // 1. Find item to get its details
-    const itemToUpdate = cart.find(item => item.id === id);
-    if(!itemToUpdate) return;
+// --- FIXED UPDATE QUANTITY (Smart Lookup) ---
+    const handleUpdateQuantity = useCallback(async (id, delta) => {
+        // 1. Find item using Smart Search
+        const itemToUpdate = cart.find(item => 
+            String(item.id) === String(id) || 
+            String(item.product) === String(id) || 
+            String(item.product?._id) === String(id)
+        );
 
-    // 2. Optimistic UI Update
-    setCart(prevCart => prevCart.map(item =>
-        item.id === id ? { ...item, quantity: item.quantity + delta } : item
-    ).filter(item => item.quantity > 0));
+        if(!itemToUpdate) return;
 
-    // 3. Backend Sync
-    if (user) {
-        try {
-            // FIX: Ensure we use the correct Variant ID from the product list
-            // (Sometimes local cart item doesn't have the full variant info)
-            let variantIdToSend = itemToUpdate.variant;
+        // 2. Optimistic UI Update
+        setCart(prevCart => prevCart.map(item => {
+            // Check if this is the item we want to update
+            const isMatch = 
+                String(item.id) === String(id) || 
+                String(item.product) === String(id) || 
+                String(item.product?._id) === String(id);
 
-            // If local item says "Standard" or is missing ID, try to find it in the products list
-            const productRef = products.find(p => p.id === id);
-            if(productRef && productRef.variants && productRef.variants.length > 0) {
-                 // Use the first variant's ID if we don't have a specific one
-                 variantIdToSend = productRef.variants[0]._id || productRef.variants[0].id;
+            if (isMatch) {
+                return { ...item, quantity: item.quantity + delta };
             }
+            return item;
+        }).filter(item => item.quantity > 0));
 
-            await api.post('/cart', {
-                productId: id,
-                variantId: variantIdToSend, // Send Real ID
-                quantity: delta // +1 or -1
-            });
-            console.log("DB Updated");
-        } catch (err) {
-            console.error("DB Update Failed", err);
+        // 3. Backend Sync
+        if (user) {
+            try {
+                let variantIdToSend = itemToUpdate.variant || itemToUpdate.variantId;
+
+                // Fallback lookup
+                if (!variantIdToSend || variantIdToSend === 'Standard') {
+                    const productRef = products.find(p => String(p.id) === String(id) || String(p._id) === String(id));
+                    if(productRef && productRef.variants && productRef.variants.length > 0) {
+                         variantIdToSend = productRef.variants[0]._id || productRef.variants[0].id;
+                    }
+                }
+
+                await api.post('/cart', {
+                    productId: id,
+                    variantId: variantIdToSend, 
+                    quantity: delta 
+                });
+                console.log("DB Updated");
+            } catch (err) {
+                console.error("DB Update Failed", err);
+            }
         }
-    }
-}, [cart, user, products]);
+    }, [cart, user, products]);
 
     // --- FINAL FIXED HANDLE PLACE ORDER (With Price Lookup) ---
     const handlePlaceOrder = useCallback(async (orderData) => {
