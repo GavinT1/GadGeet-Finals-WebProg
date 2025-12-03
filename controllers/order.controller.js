@@ -171,6 +171,10 @@ exports.markOrderAsDelivered = async (req, res) => {
             order.isDelivered = true;
             order.deliveredAt = Date.now();
             order.orderStatus = "Delivered"; // Or "Completed"
+            
+            order.isPaid = true;
+            order.paidAt = order.paidAt || Date.now();
+            order.paymentStatus = 'paid';
 
             const updatedOrder = await order.save();
             console.log("Order marked as delivered:", updatedOrder);
