@@ -67,19 +67,13 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-// order.controller.js
-
-// --- ADD THIS FUNCTION ---
 exports.getMyOrders = async (req, res) => {
     try {
-        // 1. Find orders for the logged-in user
-        // 2. Sort by newest first (createdAt: -1)
-        // 3. Populate product details (so we get the image if needed)
         const orders = await Order.find({ user: req.user.id })
             .populate({
                 path: 'orderItems.product',
                 model: 'Product',
-                select: 'imageUrl' // We just need the image
+                select: 'imageUrl' 
             })
             .sort({ createdAt: -1 });
 
@@ -161,7 +155,6 @@ exports.updateOrderToDelivered = async (req, res) => {
     }
 };
 
-// Update Order Status to Delivered
 exports.markOrderAsDelivered = async (req, res) => {
     try {
         console.log("Attempting to deliver order", req.params.id);
@@ -170,7 +163,7 @@ exports.markOrderAsDelivered = async (req, res) => {
         if (order) {
             order.isDelivered = true;
             order.deliveredAt = Date.now();
-            order.orderStatus = "Delivered"; // Or "Completed"
+            order.orderStatus = "Delivered"; 
             
             order.isPaid = true;
             order.paidAt = order.paidAt || Date.now();
@@ -195,26 +188,21 @@ exports.fakePayOrder = async (req, res) => {
         if (order.user.toString()!== req.user.id) return res.status(401).json({ message: 'Not authorized to pay for this order' });
         if(order.isPaid) return res.status(400).json({ message: 'Order is already paid' });
 
-        // 1. Get Details
         const {cardNumber, expiryDate, cvc, nameOnCard} = req.body;
 
-        // 2. Validate Presence
         if(!cardNumber || !expiryDate || !cvc || !nameOnCard){
             return res.status(400).json({ message: 'All payment fields are required' });
         }
 
-        // 3. Validate Card Number
         const cleanCardNumber = cardNumber.replace(/\s+/g, '');
         if(cleanCardNumber.length !== 16 || isNaN(cleanCardNumber)){
             return res.status(400).json({ message: 'Invalid card number (Must Be 16 Digits)' });
         }
 
-        // 4. Validate CVC
         if(cvc.length !== 3 || isNaN(cvc)){
             return res.status(400).json({ message: 'Invalid CVC (Must Be 3 Digits)' });
         }
 
-        // 5. Success Logic
         order.isPaid= true;
         order.paidAt= Date.now();
 
@@ -223,7 +211,6 @@ exports.fakePayOrder = async (req, res) => {
 
         const updatedOrder = await order.save();
         
-        // Fixed: Use backticks for template literal
         console.log(`Payment processed successfully ending with ${cleanCardNumber.slice(-4)} for #${order._id}.`);
         
         res.json(updatedOrder);

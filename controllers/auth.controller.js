@@ -5,14 +5,14 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 const API_URL = "http://localhost:3000/api/auth";
 
-// Helper to generate token
+
 const generateToken = (userId) => {
     return jwt.sign({ user: { id: userId } }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
 exports.register = async (req, res) => {
     try {
-        // 1. Get all the new fields from the frontend
+        
         const { 
             username, 
             firstName, 
@@ -23,7 +23,6 @@ exports.register = async (req, res) => {
             phoneNumber 
         } = req.body;
 
-        // 2. Check if user exists (by Email OR Username)
         let user = await User.findOne({ 
             $or: [{ email: email }, { username: username }] 
         });
@@ -34,7 +33,7 @@ exports.register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 3. Create new user
+        
          user = new User({
           username,
           firstName,
@@ -46,16 +45,14 @@ exports.register = async (req, res) => {
 
       addresses: [{ 
         label: 'Home', 
-        address: address, // The street address from the form
-        city: 'City', // Placeholder since register form only has one field
+        address: address, 
+        city: 'City', 
         isDefault: true 
     }]
 });
 
         await user.save();
 
-        // 4. Generate Token & Return User Data immediately 
-        // (This logs them in automatically after registering)
         const token = generateToken(user.id);
 
         res.status(201).json({ 
@@ -77,7 +74,7 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-        // 1. Accept 'guestCart' from the frontend request
+        
         const { email, password, guestCart } = req.body;
 
         const user = await User.findOne({ email });
@@ -86,22 +83,20 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.passwordHash);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-        // --- 2. CART MERGE LOGIC ---
-        // If the user has a guest cart, merge it into the database cart
+        
         if (guestCart && Array.isArray(guestCart) && guestCart.length > 0) {
             
             for (const guestItem of guestCart) {
-                // Find if this product+variant already exists in the User's DB cart
                 const existingItem = user.cart.find(dbItem => 
                     dbItem.product.toString() === guestItem.id && 
                     dbItem.variantId === (guestItem.variant || 'Standard')
                 );
 
                 if (existingItem) {
-                    // If exists, just add the quantity
+                    
                     existingItem.quantity += guestItem.quantity;
                 } else {
-                    // If not, push the new item
+                   
                     user.cart.push({
                         product: guestItem.id,
                         variantId: guestItem.variant || 'Standard',
@@ -109,13 +104,9 @@ exports.login = async (req, res) => {
                     });
                 }
             }
-            await user.save(); // Save the merged cart to MongoDB
+            await user.save(); 
         }
-        // ---------------------------
-
-        // ... (existing login logic above) ...
-
-        // 1. POPULATE THE CART
+        
         await user.populate({
             path: 'cart.product',
             model: 'Product'
@@ -123,24 +114,23 @@ exports.login = async (req, res) => {
 
         const token = generateToken(user._id);
 
-        // 2. FORMAT CART (Exactly like cart.controller.js)
+        
         const formattedCart = user.cart.map(item => {
-            if (!item.product) return null; // Skip if product deleted
+            if (!item.product) return null; 
 
-            // Find the specific variant to get the correct price
             const variant = item.product.variants?.find(v => v._id.toString() === item.variantId);
 
             return {
-                id: item.product._id,       // Product ID
+                id: item.product._id,       
                 name: item.product.name,
                 price: variant ? variant.price : item.product.price,
                 imageUrl: item.product.imageUrl,
-                variant: item.variantId,    // <--- CRITICAL for Deleting!
+                variant: item.variantId,   
                 quantity: item.quantity
             };
         }).filter(Boolean);
 
-        // 3. SEND RESPONSE
+        
         res.json({
             token,
             user: {
@@ -150,7 +140,7 @@ exports.login = async (req, res) => {
                 isAdmin: user.isAdmin,
                 addresses: user.addresses,
                 phoneNumber: user.phoneNumber,
-                cart: formattedCart // <--- Send the clean, formatted cart
+                cart: formattedCart 
             }
         });
 
@@ -160,7 +150,7 @@ exports.login = async (req, res) => {
     }
 };
 
-// --- NEW FUNCTION: REQUIRED FOR FRONTEND PERSISTENCE ---
+
 exports.getMyProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-passwordHash');
@@ -171,9 +161,6 @@ exports.getMyProfile = async (req, res) => {
     }
 };
 
-// --- EXISTING PASSWORD FUNCTIONS ---
-
-// --- 1. FORGOT PASSWORD ---
 exports.forgotPassword = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
@@ -181,18 +168,15 @@ exports.forgotPassword = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Generate Reset Token
         const resetToken = crypto.randomBytes(20).toString('hex');
 
-        // Hash it and save to user
         user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
         
-        // FIX: Match the Model's field name "resetPasswordExpires" (with an 's')
-        user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 Minutes
+        user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; 
 
         await user.save({ validateBeforeSave: false });
 
-        // Frontend Link (Ensure port 5173)
+        
         const frontendURL = 'http://localhost:5173';
         const resetUrl = `${frontendURL}/?token=${resetToken}`;
 
@@ -210,7 +194,7 @@ exports.forgotPassword = async (req, res) => {
 
         } catch (err) {
             user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined; // FIX: Match Model
+            user.resetPasswordExpires = undefined; 
             await user.save({ validateBeforeSave: false });
             return res.status(500).json({ message: 'Email could not be sent' });
         }
@@ -225,13 +209,13 @@ exports.resetPassword = async (req, res) => {
     try {
         const resetToken = req.body.token;
 
-        // Hash the incoming token to compare with DB
+        
         const hashedToken = crypto
             .createHash('sha256')
             .update(resetToken)
             .digest('hex');
 
-        // FIX: Match the Model's field name "resetPasswordExpires"
+       
         const user = await User.findOne({
             resetPasswordToken: hashedToken,
             resetPasswordExpires: { $gt: Date.now() } 
@@ -241,14 +225,12 @@ exports.resetPassword = async (req, res) => {
             return res.status(400).json({ message: 'Invalid or expired token' });
         }
 
-        // FIX: Your model uses 'passwordHash', not 'password'
-        // We must hash the new password before saving it
         const salt = await bcrypt.genSalt(10);
         user.passwordHash = await bcrypt.hash(req.body.newPassword, salt);
 
-        // Clear reset fields
+       
         user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined; // FIX: Match Model
+        user.resetPasswordExpires = undefined; 
 
         await user.save();
 
@@ -288,7 +270,6 @@ exports.updateAddresses = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         
-        // Replace old list with new list from frontend
         user.addresses = req.body.addresses; 
         
         await user.save();

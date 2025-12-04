@@ -2,8 +2,6 @@ const Product = require('../Models/product.model');
 
 exports.createProduct = async (req, res) => {
     try {
-        // This automatically includes the new fields (supplierId, etc.) 
-        // because it uses the whole req.body
         const product = new Product(req.body);
 
         const savedProduct = await product.save();
@@ -50,10 +48,8 @@ exports.updateProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
         
         if(product){
-            // Update Standard Fields
             if (name) product.name = name;
             
-            // FIX: Explicitly update the price
             if (price !== undefined) product.price = price; 
 
             if (brand) product.brand = brand;
@@ -61,10 +57,8 @@ exports.updateProduct = async (req, res) => {
             if (category) product.category = category;
             if (specs) product.specs = specs;
             
-            // Update Variants
             if (variants) product.variants = variants;
 
-            // Update New Fields
             if (supplierId !== undefined) product.supplierId = supplierId;
             if (unitPrice !== undefined) product.unitPrice = unitPrice;
             if (costPrice !== undefined) product.costPrice = costPrice;
@@ -117,7 +111,7 @@ exports.updateProductVariants = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
     try {
-        // Find the product by ID and delete it in one step
+
         const product = await Product.findByIdAndDelete(req.params.id);
 
         if (!product) {

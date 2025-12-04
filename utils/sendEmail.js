@@ -1,22 +1,22 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
-    // 1. Create the Transporter (The Postman)
+    
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: process.env.EMAIL_USER, // Your email
-            pass: process.env.EMAIL_PASS  // Your App Password
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS 
         }
     });
 
-    // 2. Define the Email Options
+    
     const mailOptions = {
         from: `"Gadget Store Support" <${process.env.EMAIL_USER}>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
-        // Optional: Add HTML if you want it to look pretty
+       
         html: `
             <div style="font-family: Arial, sans-serif; padding: 20px;">
                 <h2>Password Reset Request</h2>
@@ -27,7 +27,7 @@ const sendEmail = async (options) => {
         `
     };
 
-    // 3. Send the Email
+    
     await transporter.sendMail(mailOptions);
 };
 

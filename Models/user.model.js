@@ -31,12 +31,12 @@ const userSchema = new mongoose.Schema({
     match: [/.+\@.+\..+/, 'Please fill a valid email address'],
     lowercase: true,
   },
-  // --- FIX 1: CHANGE 'password_hash' TO 'passwordHash' ---
+  
   passwordHash: {
     type: String,
     required: [true, 'Please provide a password hash'],
   },
-  // -------------------------------------------------------
+  
   firstName: {
     type: String,
     required: [true, 'Please provide your first name'],
@@ -47,27 +47,24 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please provide your last name'],
     trim: true,
   },
-  // --- ADDED THIS (Required for checkout) ---s
 
-// ✅ CORRECT (Wrapped in [ square brackets ])
-addresses: [ 
+  addresses: [ 
     {
-        label: { type: String, default: 'Home' },
-        address: { type: String, required: true },
-        city: { type: String, required: true },
-        zip: { type: String },
-        isDefault: { type: Boolean, default: false }
-    }
+    label: { type: String, default: 'Home' },
+    address: { type: String, required: true },
+    city: { type: String, required: true },
+    zip: { type: String },
+    isDefault: { type: Boolean, default: false }
+  }
 ],
   
-  // ------------------------------------------------
-  // --- FIX 2: CHANGE 'phone' TO 'phoneNumber' ---
+  
   phoneNumber: {
     type: String,
     required: [true, 'Please provide a phone number'],
     trim: true,
   },
-  // ----------------------------------------------
+  
   
   isAdmin:{
     type: Boolean,

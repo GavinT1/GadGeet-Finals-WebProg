@@ -33,5 +33,4 @@ const admin = (req, res, next) => {
     }
 };
 
-// --- FIX: EXPORT AS AN OBJECT ---
 module.exports = { protect, admin };

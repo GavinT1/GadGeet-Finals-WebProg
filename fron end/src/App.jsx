@@ -3,8 +3,6 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 
 
 const initialMockProducts = [];
-// --- END MOCK DATA FOR DASHBOARD ---
-
 
 const getProductImageUrl = (productId, products) => {
     const product = products.find(p => p.id === productId);
@@ -32,7 +30,7 @@ const EditIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" w
 const PlusIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const MapPinIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
 const ArchiveIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M21 8v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><path d="M10 12h4"/></svg>;
-// --- END ICON LIBRARY ---
+
 
 // ShippingAddresses ---
 const ShippingAddresses = ({ addresses }) => (
@@ -109,13 +107,13 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, products }) => (
 
 // --- PRODUCT DETAIL VIEW COMPONENT ---
 const ProductDetailView = ({ product, onAddToCart, onGoBack, products }) => {
-    // 1. ADD STATE FOR QUANTITY
+    
     const [selectedQty, setSelectedQty] = useState(1); 
 
     if (!product) return <div className="main-content-container">Product not found.</div>;
 
     const handleQuantityChange = (e) => {
-        // 2. SAVE SELECTION TO STATE
+        
         setSelectedQty(parseInt(e.target.value)); 
     };
 
@@ -153,14 +151,14 @@ const ProductDetailView = ({ product, onAddToCart, onGoBack, products }) => {
 
                     <div className="product-detail-actions">
                         <label htmlFor="quantity" className="quantity-label">Quantity:</label>
-                        {/* 3. CONNECT STATE TO SELECT */}
+                        
                         <select id="quantity" className="quantity-select" value={selectedQty} onChange={handleQuantityChange}>
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option>
                         </select>
                         <button 
-                            // 4. PASS QUANTITY TO FUNCTION
+                            
                             onClick={() => onAddToCart(product, selectedQty)} 
                             className="detail-add-to-cart-btn"
                             disabled={totalStock === 0}
@@ -240,7 +238,7 @@ const CartView = ({ cartItems, onUpdateQuantity, onRemove, onCheckoutClick, prod
                 <div className="cart-items-list">
                     {cartItems.map(item => (
                         <CartItem 
-                key={`${item.id}-${item.variant || 'std'}`} // <--- Unique Key Fix
+                key={`${item.id}-${item.variant || 'std'}`} 
                 item={item} 
                 onUpdateQuantity={onUpdateQuantity} 
                 onRemove={onRemove} 
@@ -287,7 +285,7 @@ const [expiry, setExpiry] = useState('');
 const [cvc, setCvc] = useState('');
 const [nameOnCard, setNameOnCard] = useState('');
 
-// --- Sync selectedAddressId when addresses load ---
+
 useEffect(() => {
     if (addresses.length > 0) {
         const defaultAddr = addresses.find(a => a.isDefault);
@@ -295,7 +293,7 @@ useEffect(() => {
             defaultAddr?._id || defaultAddr?.id || addresses[0]._id || addresses[0].id
         );
     } else {
-        setSelectedAddressId(''); // no addresses yet
+        setSelectedAddressId(''); 
     }
 }, [addresses]);
 
@@ -325,7 +323,7 @@ const handleEditAddress = (e, addr) => {
         city: addr.city,
         zip: addr.zip || ''
     });
-    setSelectedAddressId('new'); // switch to form view
+    setSelectedAddressId('new'); 
 };
 
 const handleDeleteAddress = async (e, id) => {
@@ -378,25 +376,25 @@ const handleSaveAddress = async () => {
     }
 };
 
-// --- PLACE ORDER (FIXED TO IGNORE ID MISMATCH) ---
+//PLACE ORDER 
 const handleSubmitOrder = async (e) => {
     e.preventDefault();
 
-    // 1. Check if the list is empty
+    
     if (!addresses || addresses.length === 0) {
         return alert("Please add a delivery address first.");
     }
 
-    // 2. Try to find the specific address
+    
     let selectedAddr = addresses.find(a => String(a._id || a.id) === String(selectedAddressId));
 
-    // 3. THE FIX: If exact ID isn't found, just use the first address in the list
+    
     if (!selectedAddr) {
         console.log("Exact ID not found. Auto-selecting the available address.");
-        selectedAddr = addresses[0]; // <--- FORCES THE FIRST ADDRESS
+        selectedAddr = addresses[0]; 
     }
 
-    // 4. Double check we actually have data now
+    
     if (!selectedAddr) return alert("Address data is missing.");
 
     if (cardNumber.length !== 16) return alert("Card number must be 16 digits.");
@@ -409,7 +407,7 @@ const handleSubmitOrder = async (e) => {
             street: selectedAddr.address,
             city: selectedAddr.city,
             zip: selectedAddr.zip
-            // Phone number is REMOVED as requested
+            
         },
         orderItems: cartItems.map(item => ({
             name: item.name,
@@ -426,15 +424,15 @@ const handleSubmitOrder = async (e) => {
     });
 };
 
-// Add this inside your component, before the return statement
+
 useEffect(() => {
-    // If we have addresses, but the selected ID is invalid
+    
     if (addresses && addresses.length > 0) {
         const isValid = addresses.find(a => String(a._id || a.id) === String(selectedAddressId));
         
-        // If current selection is invalid (and we aren't trying to add a 'new' one)
+        
         if (!isValid && selectedAddressId !== 'new') {
-            // Auto-select the first address in the list
+            
             setSelectedAddressId(addresses[0]._id || addresses[0].id);
         }
     }
@@ -535,7 +533,7 @@ return (
     </div>
 );};
 
-// --- RESET PASSWORD VIEW (New) ---
+//RESET PASSWORD VIEW 
 const ResetPasswordView = ({ onGoBack }) => {
     const [loading, setLoading] = useState(false);
     
@@ -544,7 +542,6 @@ const ResetPasswordView = ({ onGoBack }) => {
         const newPassword = e.target.new_password.value;
         const confirmPassword = e.target.confirm_password.value;
 
-        // 1. Validation
         if (newPassword !== confirmPassword) {
             alert("Passwords do not match!");
             return;
@@ -554,7 +551,6 @@ const ResetPasswordView = ({ onGoBack }) => {
             return;
         }
 
-        // 2. Get the Token from the URL (The link in the email looks like: /?token=xyz...)
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
 
@@ -566,14 +562,12 @@ const ResetPasswordView = ({ onGoBack }) => {
         setLoading(true);
 
         try {
-            // 3. Send to Backend
-            // Make sure your backend has this route!
             await api.post('/auth/reset-password', { 
                 token: token, 
                 newPassword: newPassword 
             });
 
-            // 4. Success
+           
             const customAlert = (message) => {
                 const messageBox = document.createElement('div');
                 messageBox.className = 'custom-alert-success';
@@ -583,10 +577,10 @@ const ResetPasswordView = ({ onGoBack }) => {
             };
             customAlert("Password reset successful! Please login.");
 
-            // Clear the token from URL so they don't get stuck here
+            
             window.history.replaceState({}, document.title, "/");
             
-            // Go to Login
+            
             onGoBack(); 
 
         } catch (err) {
@@ -634,9 +628,9 @@ const ResetPasswordView = ({ onGoBack }) => {
     );
 };
 
-// --- FORGOT PASSWORD VIEW (Real Connection) ---
+//FORGOT PASSWORD VIEW 
 const ForgotPasswordView = ({ onGoBack }) => {
-    // 1. Add loading state to disable button while sending
+    
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
@@ -646,8 +640,6 @@ const ForgotPasswordView = ({ onGoBack }) => {
         setLoading(true);
 
         try {
-            // 2. THIS IS THE CONNECTION TO THE BACKEND
-            // It sends the email to your Node.js server
             const response = await api.post('/auth/forgot-password', { email });
 
             const customAlert = (message) => {
@@ -660,10 +652,10 @@ const ForgotPasswordView = ({ onGoBack }) => {
                 }, 4000);
             };
             
-            // 3. Show success message from the server
+            
             customAlert(response.data.message || "Email sent! Check your inbox.");
             
-            // Wait 2 seconds, then go back to login
+            
             setTimeout(onGoBack, 2000);
 
         } catch (error) {
@@ -703,8 +695,8 @@ const ForgotPasswordView = ({ onGoBack }) => {
         </div>
     );
 };
-// --- CHANGE PASSWORD VIEW (FIXED) ---
-const ChangePasswordView = ({ onGoBack, user }) => { // 1. ADDED 'user' HERE
+//CHANGE PASSWORD VIEW 
+const ChangePasswordView = ({ onGoBack, user }) => { 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -716,7 +708,6 @@ const ChangePasswordView = ({ onGoBack, user }) => { // 1. ADDED 'user' HERE
         const newPassword = e.target.new_password.value;
         const confirmPassword = e.target.confirm_password.value;
 
-        // 1. Client Validation
         if (newPassword !== confirmPassword) {
             setError("New passwords do not match!");
             return;
@@ -729,15 +720,15 @@ const ChangePasswordView = ({ onGoBack, user }) => { // 1. ADDED 'user' HERE
         setLoading(true);
 
         try {
-            // 2. Send to Backend
+            
             await api.put('/auth/change-password', {
                 oldPassword,
                 newPassword
             });
 
-            // 3. Success
+            
             alert("Password changed successfully!");
-            onGoBack(); // Go back to dashboard
+            onGoBack(); 
 
         } catch (err) {
             console.error("Change Pass Error:", err);
@@ -752,12 +743,10 @@ const ChangePasswordView = ({ onGoBack, user }) => { // 1. ADDED 'user' HERE
             <h2 className="page-title">Change Password</h2>
             <div className="checkout-card" style={{ maxWidth: '500px', margin: '0 auto' }}>
                 
-                {/* 2. ERROR DISPLAY (If any) */}
                 {error && <div className="auth-error" style={{marginBottom:'20px'}}>{error}</div>}
 
                 <form onSubmit={handleSubmit} className="checkout-form">
                     
-                    {/* 3. SAFE EMAIL DISPLAY (using user?.email) */}
                     <h3 className="section-title-indigo" style={{ marginBottom: '20px' }}>
                         Security Update for {user?.email || 'your account'}
                     </h3>
@@ -796,7 +785,6 @@ const ChangePasswordView = ({ onGoBack, user }) => { // 1. ADDED 'user' HERE
                     </button>
                 </form>
                 
-                {/* 4. FIXED BACK BUTTON (Added Text) */}
                 <button 
                     onClick={onGoBack} 
                     className="utility-btn" 
@@ -810,13 +798,13 @@ const ChangePasswordView = ({ onGoBack, user }) => { // 1. ADDED 'user' HERE
 };
 
 
-// --- AUTH VIEW COMPONENT (Fixed) ---
+//AUTH VIEW COMPONENT 
 const AuthView = ({ onAuthSuccess, onForgotPasswordClick, cart }) => { 
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // State for ALL form fields
+   
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -827,7 +815,6 @@ const AuthView = ({ onAuthSuccess, onForgotPasswordClick, cart }) => {
         phoneNumber: ''
     });
 
-    // Handle typing in any input
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -840,29 +827,25 @@ const AuthView = ({ onAuthSuccess, onForgotPasswordClick, cart }) => {
         try {
     let response;
     if (isLogin) {
-        // --- LOGIN ---
+        //LOGIN 
         response = await api.post('/auth/login', {
             email: formData.email,
             password: formData.password,
             guestCart: cart
         });
     } else {
-        // --- REGISTER ---
+        //REGISTER 
         response = await api.post('/auth/register', formData);
     }
 
-    // --- SAFER HANDLING HERE ---
-    console.log("Backend Response:", response.data); // Debugging line
+    console.log("Backend Response:", response.data); 
 
     if (response.data && response.data.token) {
-        // 1. Save Token
+       
         localStorage.setItem('token', response.data.token);
         
-        // 2. Extract User Data (Safe way)
-        // If 'user' is nested inside data, use it. Otherwise use data itself.
         const user = response.data.user || response.data;
         
-        // 3. Update App
         onAuthSuccess(user);
     } else {
         throw new Error("No token received from server.");
@@ -887,7 +870,7 @@ const AuthView = ({ onAuthSuccess, onForgotPasswordClick, cart }) => {
                 
                 <form onSubmit={handleSubmit} className="auth-form">
                     
-                    {/* --- REGISTRATION FIELDS (Only show if NOT logging in) --- */}
+                    {/*REGISTRATION FIELDS */}
                     {!isLogin && (
                         <div style={{ animation: 'fadeIn 0.3s' }}>
                             <input 
@@ -920,7 +903,7 @@ const AuthView = ({ onAuthSuccess, onForgotPasswordClick, cart }) => {
                         </div>
                     )}
 
-                    {/* --- COMMON FIELDS (Email & Password) --- */}
+                    {/*COMMON FIELDS (Email & Password)*/}
                     <input 
                         name="email" type="email" placeholder="Email Address" 
                         className="form-input" required 
@@ -967,10 +950,9 @@ const AuthView = ({ onAuthSuccess, onForgotPasswordClick, cart }) => {
     );
 };
 
-// --- UPDATED PURCHASE HISTORY LIST ---
-const PurchaseHistoryList = ({ history = [], products = [], onOrderReceived }) => { // 1. Add onOrderReceived prop
+//UPDATED PURCHASE HISTORY LIST 
+const PurchaseHistoryList = ({ history = [], products = [], onOrderReceived }) => {
     
-    // Helper to get product image
     const getOrderItemImageUrl = (itemId) => {
         const product = products.find(p => p.id === itemId || p._id === itemId);
         return product ? product.imageUrl : ''; 
@@ -1032,11 +1014,10 @@ const PurchaseHistoryList = ({ history = [], products = [], onOrderReceived }) =
                     
                     <div className="order-footer" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
                         <span className="order-delivery-date" style={{color: '#10B981', fontSize: '0.85rem'}}>
-                            {/* 3. Show Date only if Delivered */}
+                            
                             {order.status === 'Delivered' ? `Delivered on ${order.date}` : 'Delivery in progress'}
                         </span>
                         
-                        {/* 4. Button Logic: Hide if already delivered */}
                         {order.status !== 'Delivered' && (
                             <button 
                                 onClick={() => onOrderReceived(order.id)} 
@@ -1058,7 +1039,7 @@ const PurchaseHistoryList = ({ history = [], products = [], onOrderReceived }) =
     );
 };
 
-// Icons remain the same
+
 const TrashIcon = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
     viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -1078,14 +1059,14 @@ const CheckCircleIcon = (props) => (
   </svg>
 );
 
-// --- DASHBOARD VIEW COMPONENT (Connected to Database) ---
+//DASHBOARD VIEW COMPONENT
 const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, products, onChangePasswordClick, onOrderReceived }) => {
     // 1. STATE: Manage Address Form
     const [editingId, setEditingId] = useState(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [addressForm, setAddressForm] = useState({ name: '', street: '', city: '', zip: '' });
 
-    // --- HANDLERS ---
+    //HANDLERS
     const handleFormChange = (e) => {
         setAddressForm({ ...addressForm, [e.target.name]: e.target.value });
     };
@@ -1097,10 +1078,9 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
     };
 
     const handleEditClick = (addr) => {
-        // FIX: Use _id from database if available
+        
         setEditingId(addr._id || addr.id);
         
-        // FIX: Read zip directly from object, don't split string
         setAddressForm({
             name: addr.label,
             street: addr.address,
@@ -1115,7 +1095,7 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
         setEditingId(null);
     };
 
-    // --- NEW: DELETE FROM DATABASE ---
+    //DELETE FROM DATABASE 
     const handleDeleteClick = async (id) => {
         if (window.confirm("Are you sure you want to delete this address?")) {
             // FIX: Filter by _id OR id
@@ -1131,15 +1111,13 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
         }
     };
 
-    // --- NEW: SAVE TO DATABASE (FIXED) ---
+    //SAVE TO DATABASE
     const handleSaveAddress = async () => {
         if (!addressForm.street || !addressForm.city) {
             alert("Please fill in the address details.");
             return;
         }
 
-        // 1. Create Object for LOCAL DISPLAY (needs a temp ID for React keys)
-        // If we are editing, use the existing ID. If new, generate a temp string.
         const tempId = Date.now().toString(); 
         const isNewEntry = !editingId;
         
@@ -1152,7 +1130,6 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
             isDefault: addresses.length === 0 
         };
 
-        // 2. Update Local UI Immediately (Optimistic Update)
         let updatedList;
         if (editingId) {
             updatedList = addresses.map(a => (a._id || a.id) === editingId ? { ...a, ...addressForLocalState } : a);
@@ -1164,11 +1141,8 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
         setIsFormOpen(false);
         setEditingId(null);
 
-        // 3. PREPARE DATA FOR SERVER
-        // IMPORTANT: We must NOT send the fake 'tempId' to the backend.
-        // MongoDB will reject "1735..." because it's not a valid ObjectId.
         const listForServer = updatedList.map(addr => {
-            // If the ID looks like a timestamp (numbers only), remove it so Mongo generates a real ID
+    
             if (addr._id && /^\d+$/.test(addr._id)) {
                 const { _id, ...rest } = addr;
                 return rest;
@@ -1176,24 +1150,19 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
             return addr;
         });
 
-        // 4. Send to Backend & Sync with REAL IDs
         try {
             const { data } = await api.put('/auth/update-addresses', { addresses: listForServer });
             
             console.log("Address saved to database!");
             
-            // CRITICAL STEP: Update state with the server's response.
-            // The server has generated the REAL _id for the new address.
-            // We need this so you can edit/delete it later without refreshing.
             if (data.user && data.user.addresses) {
                 setAddresses(data.user.addresses);
             } else if (Array.isArray(data.addresses)) {
-                setAddresses(data.addresses); // Fallback depending on your API structure
+                setAddresses(data.addresses); 
             }
 
         } catch (err) {
             console.error("Failed to save address", err);
-            // Optional: Revert local change if server fails
             alert("Failed to save to server. Please refresh.");
         }
     };
@@ -1257,7 +1226,7 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
                         {/* List Addresses */}
                         <div className="address-grid">
                             {addresses.map(addr => {
-                                // Normalize ID just for the key and delete action
+                                
                                 const id = addr._id || addr.id;
                                 return (
                                     <div key={id} className="address-card" style={{ cursor: 'default' }}>
@@ -1266,7 +1235,7 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
                                                 {addr.label} {addr.isDefault && <span className="address-tag">Default</span>}
                                             </span>
                                             <p className="address-street">{addr.address}</p>
-                                            {/* Show Zip Code Properly */}
+                                            
                                             <p className="address-city">{addr.city} {addr.zip ? `- ${addr.zip}` : ''}</p>
                                         </label>
 
@@ -1281,6 +1250,7 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
                                     </div>
                                 );
                             })}
+                            
 
                             <div 
                                 onClick={handleAddNewClick}
@@ -1323,14 +1293,12 @@ const DashboardView = ({ user, onLogout, addresses = [], setAddresses, history, 
 };
 
 // PRODUCT MANAGER
-
-// --- FIXED PRODUCT MANAGER (With Main Price Edit) ---
 const ProductManager = ({ product, onSave, onGoBack }) => {
     const isNew = !product;
     const initialProduct = product || {
         id: Date.now(),
         name: '',
-        price: 0, // This is the MAIN PRICE you want to edit
+        price: 0, 
         compatibility: '',
         description: '',
         category: '',
@@ -1373,13 +1341,12 @@ const ProductManager = ({ product, onSave, onGoBack }) => {
    const handleSubmit = (e) => {
         e.preventDefault();
         
-        // Validation
         if (!formData.name || formData.price <= 0) {
             alert("Please provide a valid Name and Main Price.");
             return;
         }
 
-        // DIRECT SAVE (No price overriding!)
+        
         onSave({ 
             ...formData, 
             id: isNew ? Date.now() : formData.id 
@@ -1532,7 +1499,7 @@ const AdminDashboardView = ({ products, onEditProduct, onAddProduct, onDeletePro
             </div>
             
             <div className="dashboard-card admin-inventory-card">
-                {/* Centered Add Product Button */}
+                
                 <div className="admin-actions-controls">
                     <button onClick={onAddProduct} className="admin-add-product-btn-centered">
                         <PlusIcon className="icon-medium" /> Add New Product
@@ -1676,7 +1643,7 @@ const HomeView = ({ products, onAddToCart, onViewDetails }) => {
                             product={product} 
                             onAddToCart={onAddToCart}
                             onViewDetails={onViewDetails}
-                            products={products} // Pass products list
+                            products={products} 
                         />
                     ))}
                 </div>
@@ -1685,35 +1652,28 @@ const HomeView = ({ products, onAddToCart, onViewDetails }) => {
     );
 };
 
-// --- MAIN APP COMPONENT (Updated) ---
+//MAIN APP COMPONENT 
 export default function App() {
     const [view, setView] = useState('home');
     const [user, setUser] = useState(null);
-    const [cart, setCart] = useState([]);
-    
-    // --- THIS IS THE CRITICAL LINE YOU ARE MISSING ---
+    const [cart, setCart] = useState([]); 
     const [addresses, setAddresses] = useState([]); 
-    // ------------------------------------------------
-
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder] = useState('name-asc'); 
     const [makeFilter, setMakeFilter] = useState('All Makes'); 
     const [categoryFilter, setCategoryFilter] = useState('All Categories'); 
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [purchaseHistory, setPurchaseHistory] = useState([]);
-
-    // --- ADMIN FEATURE START: Product State and Handlers ---
     const [products, setProducts] = useState(initialMockProducts);
     const [productToEdit, setProductToEdit] = useState(null);
     const [isEditingNewProduct, setIsEditingNewProduct] = useState(false);
 
-    // --- NEW: FETCH PRODUCTS FROM DB ---
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const { data } = await api.get('/products');
                 
-                // Map DB fields to Frontend fields
+                
                 const mappedProducts = data.map(p => ({
                     ...p,
                     id: p._id, 
@@ -1733,7 +1693,7 @@ export default function App() {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    // 1. Load User Profile & Addresses
+                    
                     const { data: userData } = await api.get('/auth/me');
                     
                     setUser(userData);
@@ -1744,8 +1704,6 @@ export default function App() {
                         setAddresses([]); 
                     }
 
-                    // 2. --- NEW: LOAD CART FROM DATABASE ---
-                    // This restores your items when you refresh the page
                     try {
                         const { data: cartData } = await api.get('/cart');
                         if (Array.isArray(cartData)) {
@@ -1766,47 +1724,41 @@ export default function App() {
         loadUser();
     }, []);
 
-    // --- NEW: CHECK FOR RESET TOKEN IN URL ---
+   
     useEffect(() => {
-        // Check if the URL has ?token=...
+        
         const params = new URLSearchParams(window.location.search);
         const resetToken = params.get('token');
 
         if (resetToken) {
-            // If we found a token, force the view to 'reset-password'
+            
             setView('reset-password');
         }
     }, []);
 
-    // --- LOAD PURCHASE HISTORY FROM DB ---
+    
     useEffect(() => {
         if (user) {
             const fetchHistory = async () => {
                 try {
                     const { data } = await api.get('/orders/myorders');
                     
-                    // --- BRIDGE: MAP DB FIELDS TO UI FIELDS ---
+                    
                     const formattedHistory = data.map(order => ({
-                        id: order._id, // Map _id -> id
-                        
-                        store: "Mall", // Static name
-                        
-                        // Capitalize status (e.g., 'processing' -> 'Processing')
+                        id: order._id, 
+                        store: "Mall", 
                         status: order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1),
-                        
-                        // Format the Date
                         date: new Date(order.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric'
                         }),
                         
-                        // Map totalPrice -> total (Fixes the 0.00 bug)
+                        
                         total: order.totalPrice, 
                         
-                        // Map items
+                        
                         items: order.orderItems.map(item => ({
-                            // The ID is crucial for the image lookup function
                             id: item.product._id || item.product, 
                             name: item.name,
                             variant: item.variantId,
@@ -1814,7 +1766,7 @@ export default function App() {
                             price: item.price
                         }))
                     }));
-                    // ------------------------------------------
+                    
 
                     setPurchaseHistory(formattedHistory);
                 } catch (error) {
@@ -1823,61 +1775,50 @@ export default function App() {
             };
             fetchHistory();
         } else {
-            setPurchaseHistory([]); // Clear history on logout
+            setPurchaseHistory([]); 
         }
     }, [user]);
 
-    // --- FINAL FIXED SAVE HANDLER (With Data Cleaning & Field Mapping) ---
+    
     const handleSaveProduct = useCallback(async (updatedProduct, isNew) => {
         try {
-            // 1. Prepare a CLEAN Payload (The "Sanitizer")
-            // We strictly select ONLY the fields the backend allows us to change.
-            // We deliberately EXCLUDE _id, __v, createdAt, etc.
             const cleanPayload = {
                 name: updatedProduct.name,
-                price: Number(updatedProduct.price), // Ensure it's a Number
+                price: Number(updatedProduct.price), 
                 description: updatedProduct.description,
-                
-                // MAP FRONTEND 'compatibility' -> BACKEND 'brand'
                 brand: updatedProduct.compatibility || updatedProduct.brand, 
-                
                 category: updatedProduct.category,
                 imageUrl: updatedProduct.imageUrl,
-                
-                // Clean the variants too
                 variants: updatedProduct.variants.map(v => ({
                     name: v.name,
                     price: Number(v.price),
                     stock: Number(v.stock),
-                    // Only keep variant _id if it exists (for editing)
+                    
                     ...(v._id && { _id: v._id }) 
                 }))
             };
 
-            console.log("SENDING CLEAN DATA:", cleanPayload); // Check this log! It should NOT have _id.
+            console.log("SENDING CLEAN DATA:", cleanPayload); 
 
             let savedDataFromBackend;
 
             if (isNew) {
-                // 2. CREATE (POST)
+               
                 const response = await api.post('/products', cleanPayload);
                 savedDataFromBackend = response.data;
             } else {
-                // 3. UPDATE (PUT)
-                // Use the ID from the original object for the URL only
+                
                 const targetId = updatedProduct.id || updatedProduct._id;
                 const response = await api.put(`/products/${targetId}`, cleanPayload);
                 savedDataFromBackend = response.data;
             }
 
-            // 4. Update Frontend State
-            // We merge the backend response with your input to ensure the UI updates instantly
             setProducts(prevProducts => {
                 const finalProductForUI = { 
                     ...savedDataFromBackend, 
-                    ...updatedProduct, // Keep your inputs visible
+                    ...updatedProduct, 
                     id: savedDataFromBackend._id || savedDataFromBackend.id || updatedProduct.id,
-                    compatibility: savedDataFromBackend.brand || updatedProduct.compatibility // Map back to frontend
+                    compatibility: savedDataFromBackend.brand || updatedProduct.compatibility 
                 };
                 
                 if (isNew) {
@@ -1889,7 +1830,7 @@ export default function App() {
                 }
             });
 
-            // 5. Success
+            
             setProductToEdit(null);
             setIsEditingNewProduct(false);
             setView('admin');
@@ -1909,15 +1850,14 @@ export default function App() {
         }
     }, []);
 
-    // --- HANDLE ORDER RECEIVED ---
+    //HANDLE ORDER RECEIVED 
     const handleOrderReceived = useCallback(async (orderId) => {
         if(!window.confirm("Confirm that you have received this order?")) return;
 
         try {
-            // 1. Call Backend to update status
+            
             await api.put(`/orders/${orderId}/deliver`);
 
-            // 2. Update Local State immediately
             setPurchaseHistory(prev => prev.map(order => {
                 if (order.id === orderId) {
                     return {
@@ -1947,15 +1887,13 @@ export default function App() {
             alert("Failed to update status.");
         }
     }, []);
-
-    // --- FINAL CONNECTED DELETE HANDLER ---
+    //DELETE HANDLER
     const handleDeleteProduct = useCallback(async (id) => {
         if (window.confirm("Are you sure you want to delete this product? PERMANENTLY?")) {
             try {
-                // 1. Call Backend to Delete
+                
                 await api.delete(`/products/${id}`);
 
-                // 2. Remove from Frontend State
                 setProducts(prevProducts => prevProducts.filter(p => p.id !== id));
 
                 const customAlert = (message) => {
@@ -1981,7 +1919,7 @@ export default function App() {
     }, []);
 
     const handleAddProduct = useCallback(() => {
-        setProductToEdit(null); // Clear any previous edit
+        setProductToEdit(null); 
         setIsEditingNewProduct(true);
         setView('admin-edit');
     }, []);
@@ -1992,41 +1930,30 @@ export default function App() {
         setView('admin');
     }, []);
 
-// --- Authentication Handlers ---
+//Authentication Handlers
     const handleAuthSuccess = useCallback(async (userData) => {
-        // 1. Set basic info immediately
         setUser({ ...userData, name: userData.name || 'Guest User', isAdmin: !!userData.isAdmin });
         setView(userData.isAdmin ? 'admin' : 'dashboard');
 
-        // --- NEW: SYNC CART IMMEDIATELY FROM LOGIN RESPONSE ---
-        // The backend login controller now returns the 'merged' cart. 
-        // We update the UI immediately so the user sees their items combined.
         if (userData.cart && Array.isArray(userData.cart)) {
              setCart(userData.cart);
         }
-        // -----------------------------------------------------
 
-        // 2. Background Fetch (Double check data)
         try {
             const token = localStorage.getItem('token'); 
             if (token) {
                 const { data } = await api.get('/auth/me');
-                
-                // Update Addresses
+            
                 if (Array.isArray(data.addresses)) {
                     setAddresses(data.addresses);
                 } else {
                     setAddresses([]);
                 }
 
-                // --- NEW: SYNC CART FROM BACKGROUND FETCH ---
-                // Just in case the login response missed something
                 if (Array.isArray(data.cart)) {
                     setCart(data.cart);
                 }
-                // --------------------------------------------
-                
-                // Update User again
+    
                 setUser(data);
             }
         } catch (error) {
@@ -2045,12 +1972,11 @@ export default function App() {
         setView('auth');
     }, []);
 
-    // --- Navigation Handler for Product Detail ---
     const handleViewDetails = useCallback((product) => {
         setSelectedProduct(product);
         setView('product');
     }, []);
-    // --- NEW: Change Password Handler ---
+
     const handleChangePasswordClick = useCallback(() => {
         setView('change-password');
     }, []);
@@ -2058,7 +1984,7 @@ export default function App() {
     // --- Cart Handlers ---
 const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty, default to 1
     
-    // 1. UPDATE LOCAL STATE
+    
     setCart(prevCart => {
         const existingItem = prevCart.find(item => item.id === product.id);
         if (existingItem) {
@@ -2066,7 +1992,7 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
                 item.id === product.id ? { ...item, quantity: item.quantity + qty } : item
             );
         } else {
-            // Use 'qty' here instead of 1
+            
             return [...prevCart, { ...product, quantity: qty, variant: product.variant || 'Standard' }];
         }
     });
@@ -2080,10 +2006,10 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
     };
     customAlert(`${product.name} added to cart!`);
 
-    // 2. SYNC WITH BACKEND
+    
     if (user) {
         try {
-            // FIX: Find the Real Variant ID (Same logic as before)
+            
             let realVariantId = product.variant;
             if (!realVariantId && product.variants && product.variants.length > 0) {
                 realVariantId = product.variants[0]._id || product.variants[0].id;
@@ -2093,7 +2019,7 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
                 await api.post('/cart', {
                     productId: product.id,
                     variantId: realVariantId, 
-                    quantity: qty // Send the actual quantity selected
+                    quantity: qty 
                 });
             }
         } catch (err) {
@@ -2102,10 +2028,9 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
     }
 }, [user]);   
 
-// --- FIXED REMOVE ITEM (Smart Lookup) ---
+//REMOVE ITEM 
     const handleRemoveItem = useCallback(async (id) => {
-        // 1. Find the item in the local cart using a "Smart Search"
-        // (Checks for id, product._id, or product string)
+        
         const itemToRemove = cart.find(item => 
             String(item.id) === String(id) || 
             String(item.product) === String(id) || 
@@ -2118,10 +2043,10 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
             return;
         }
 
-        // 2. Determine the correct Variant ID to delete
+        
         let variantIdToDelete = itemToRemove.variant || itemToRemove.variantId;
 
-        // FALLBACK: If missing, try to find it in the products list
+       
         if (!variantIdToDelete || variantIdToDelete === 'Standard') {
             const productRef = products.find(p => String(p.id) === String(id) || String(p._id) === String(id));
             if (productRef && productRef.variants && productRef.variants.length > 0) {
@@ -2131,15 +2056,13 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
 
         console.log("Deleting Item:", id, "Variant:", variantIdToDelete);
 
-        // 3. Optimistic Update (Remove from UI immediately)
-        // We filter out the item that matches the ID we passed in
         setCart(prevCart => prevCart.filter(item => 
             String(item.id) !== String(id) && 
             String(item.product) !== String(id) &&
             String(item.product?._id) !== String(id)
         ));
 
-        // 4. Sync with Backend
+        
         if (user && variantIdToDelete) {
             try {
                 await api.delete(`/cart/${variantIdToDelete}`);
@@ -2149,7 +2072,7 @@ const handleAddToCart = useCallback(async (product, qty = 1) => { // Accept qty,
         }
     }, [cart, user, products]);
 
-// --- FIXED Checkout Click ---
+//checkout Click
 const handleCheckoutClick = useCallback(() => {
     if (cart.length === 0) {
         const customAlert = (msg) => {
@@ -2163,13 +2086,12 @@ const handleCheckoutClick = useCallback(() => {
         return;
     }
 
-    // --- Navigate to checkout page instead of purchasing ---
     setView('checkout');
 }, [cart]);
 
-// --- FIXED UPDATE QUANTITY (Smart Lookup) ---
+//UPDATE QUANTITY
     const handleUpdateQuantity = useCallback(async (id, delta) => {
-        // 1. Find item using Smart Search
+       
         const itemToUpdate = cart.find(item => 
             String(item.id) === String(id) || 
             String(item.product) === String(id) || 
@@ -2178,9 +2100,9 @@ const handleCheckoutClick = useCallback(() => {
 
         if(!itemToUpdate) return;
 
-        // 2. Optimistic UI Update
+        
         setCart(prevCart => prevCart.map(item => {
-            // Check if this is the item we want to update
+            
             const isMatch = 
                 String(item.id) === String(id) || 
                 String(item.product) === String(id) || 
@@ -2192,12 +2114,12 @@ const handleCheckoutClick = useCallback(() => {
             return item;
         }).filter(item => item.quantity > 0));
 
-        // 3. Backend Sync
+        
         if (user) {
             try {
                 let variantIdToSend = itemToUpdate.variant || itemToUpdate.variantId;
 
-                // Fallback lookup
+                
                 if (!variantIdToSend || variantIdToSend === 'Standard') {
                     const productRef = products.find(p => String(p.id) === String(id) || String(p._id) === String(id));
                     if(productRef && productRef.variants && productRef.variants.length > 0) {
@@ -2217,42 +2139,39 @@ const handleCheckoutClick = useCallback(() => {
         }
     }, [cart, user, products]);
 
-    // --- FINAL FIXED HANDLE PLACE ORDER (With Price Lookup) ---
+    //HANDLE PLACE ORDER
     const handlePlaceOrder = useCallback(async (orderData) => {
         if (cart.length === 0) return;
 
         try {
             console.log("Placing order...");
 
-            // HELPER: Find the real product details for every cart item
-            // This ensures we have the correct PRICE even if the cart data is incomplete after login
             const enrichedItems = cart.map(item => {
                 const rawId = item.id || item.productId || (typeof item.product === 'object' ? item.product?._id : item.product);
-                // Find the product in the main list
+                
                 const realProduct = products.find(p => String(p.id) === String(rawId) || String(p._id) === String(rawId));
                 
                 return {
                     ...item,
-                    // Use the real price from the product list, fallback to item.price, fallback to 0
                     realPrice: realProduct ? realProduct.price : (item.price || 0),
                     realName: realProduct ? realProduct.name : item.name,
                     realId: realProduct ? realProduct.id : rawId
                 };
             });
 
-            // 1. Calculate Total using the REAL prices
+           
             const totalPrice = enrichedItems.reduce((sum, item) => sum + item.realPrice * item.quantity, 0);
 
-            // 2. Prepare Backend Data
+            
             const orderItemsForBackend = enrichedItems.map(item => ({
                 name: item.realName,
                 quantity: item.quantity,
-                price: item.realPrice, // Send correct price
+                price: item.realPrice,
                 product: item.realId,
                 variantId: item.variant || item.variants?.[0]?._id
             }));
 
-            // 3. Send to Backend
+            
             const { data: createdOrder } = await api.post('/orders', {
                 shippingAddress: {
                     name: "Walk-in/Online Customer",
@@ -2262,12 +2181,9 @@ const handleCheckoutClick = useCallback(() => {
                 },
                 orderItems: orderItemsForBackend,
                 paymentMethod: "Cash on Delivery",
-                totalPrice: totalPrice // Send correct total
+                totalPrice: totalPrice 
             });
 
-            // ---------------- THE FIX ----------------
-
-            // 4. Create the Display Object for History
             const orderForDisplay = {
                 id: createdOrder._id || Date.now().toString(),
                 store: "Mall",
@@ -2277,24 +2193,23 @@ const handleCheckoutClick = useCallback(() => {
                     month: 'short',
                     day: 'numeric'
                 }),
-                total: totalPrice, // Use the calculated total (Not NaN)
+                total: totalPrice,
 
                 items: enrichedItems.map((item, index) => ({
-                    // Use the real details we found earlier
+                    
                     id: item.realId || `temp-${index}`, 
                     name: item.realName,
                     variant: item.variant || "Standard",
                     quantity: item.quantity,
-                    price: item.realPrice // Use the real price (Not NaN)
+                    price: item.realPrice 
                 }))
             };
 
             console.log("Adding to history UI:", orderForDisplay);
 
-            // 5. Update UI instantly
+           
             setPurchaseHistory(prev => [orderForDisplay, ...prev]);
 
-            // -----------------------------------------
 
             setCart([]);
             try { await api.delete('/cart/clear'); } catch(e) { /* ignore */ }
@@ -2316,11 +2231,9 @@ const handleCheckoutClick = useCallback(() => {
         }
     }, [cart, products, setPurchaseHistory, setCart, setView]);
 
-    // --- Search, Filter, and Sort Logic ---
     const filteredAndSortedProducts = useMemo(() => {
         let currentProducts = [...products];
 
-        // 1. Filter by Search Term
         if (searchTerm) {
             const lowerSearchTerm = searchTerm.toLowerCase();
             currentProducts = currentProducts.filter(p =>
@@ -2329,7 +2242,6 @@ const handleCheckoutClick = useCallback(() => {
             );
         }
 
-        // 2. Filter by Brand (Uses the compatibility field)
         if (makeFilter !== 'All Makes') {
             const lowerMake = makeFilter.toLowerCase();
             currentProducts = currentProducts.filter(p =>
@@ -2337,7 +2249,6 @@ const handleCheckoutClick = useCallback(() => {
             );
         }
 
-        // 3. Filter by Category (Uses the new category field)
         if (categoryFilter !== 'All Categories') {
             const lowerCategory = categoryFilter.toLowerCase();
             currentProducts = currentProducts.filter(p =>
@@ -2345,7 +2256,6 @@ const handleCheckoutClick = useCallback(() => {
             );
         }
         
-        // 4. Sort
         currentProducts.sort((a, b) => {
             if (sortOrder === 'name-asc') {
                 return a.name.localeCompare(b.name);
@@ -2359,24 +2269,20 @@ const handleCheckoutClick = useCallback(() => {
         return currentProducts;
     }, [searchTerm, makeFilter, categoryFilter, sortOrder, products]);
 
-    // --- FINAL FIX: ENRICH CART DATA ---
-    // This combines the "Raw IDs" from the database with the "Full Details" from your product list.
+    //ENRICH CART DATA
+    
     const enrichedCart = useMemo(() => {
         return cart.map(cartItem => {
-            // 1. Figure out the ID (Backend might send it as 'product' string or object)
-            // We check all possible locations for the ID
             const productId = cartItem.productId 
                            || (typeof cartItem.product === 'object' ? cartItem.product._id : cartItem.product)
                            || cartItem.id;
 
-            // 2. Find the Real Product Details from your 'products' state
             const fullProductDetails = products.find(p => p.id === productId || p._id === productId);
 
-            // 3. If product not found (yet), return a placeholder to prevent crash
             if (!fullProductDetails) {
                 return {
                     ...cartItem,
-                    id: productId, // Important for deleting
+                    id: productId,
                     name: "Loading Product...",
                     price: 0,
                     imageUrl: "",
@@ -2384,17 +2290,16 @@ const handleCheckoutClick = useCallback(() => {
                 };
             }
 
-            // 4. MERGE: Keep backend quantity/variant, Use frontend Name/Price/Image
             return {
-                ...fullProductDetails, // Gets name, price, image, description
-                ...cartItem,           // Gets quantity, variantId
-                id: fullProductDetails.id // Ensures ID is at the top level for the Delete button
+                ...fullProductDetails, 
+                ...cartItem,           
+                id: fullProductDetails.id 
             };
         });
     }, [cart, products]);
 
 
-    // --- View Renderer (Updated to pass new props to DashboardView) ---
+    //View Renderer 
     const renderView = () => {
         switch (view) {
             case 'product':
@@ -2418,8 +2323,6 @@ const handleCheckoutClick = useCallback(() => {
                         cartItems={enrichedCart}
                         addresses={addresses}
                         setAddresses={setAddresses}
-                        // --- THE FIX IS HERE ---
-                        // PASS THE FUNCTION NAME ONLY. Do not write code here.
                         onPlaceOrder={handlePlaceOrder} 
                     />
                 );
@@ -2430,15 +2333,14 @@ const handleCheckoutClick = useCallback(() => {
                     cart={cart}
                 />;
                case 'dashboard':
-                // PASSING MOCK DATA AND PRODUCTS TO DASHBOARD VIEW
                 return <DashboardView 
                     user={user} 
                     onLogout={handleLogout}
                     addresses={addresses}
                     setAddresses={setAddresses}
                     history={purchaseHistory}
-                    products={products} // Needed for PurchaseHistoryList to get product images
-                    onChangePasswordClick={handleChangePasswordClick} // NEW PROP
+                    products={products} 
+                    onChangePasswordClick={handleChangePasswordClick} 
                     onOrderReceived={handleOrderReceived}
                 />;
 
@@ -2448,7 +2350,7 @@ const handleCheckoutClick = useCallback(() => {
                     onGoBack={() => setView('dashboard')} 
                     user={user}
                 />;
-            // --- ADMIN FEATURE START: Admin View Cases ---
+            //Admin View
             case 'admin':
                 if (!user?.isAdmin) return <p className="main-content-container">Access Denied: Not an Admin</p>;
                 return <AdminDashboardView 
@@ -2465,7 +2367,7 @@ const handleCheckoutClick = useCallback(() => {
                     onSave={handleSaveProduct}
                     onGoBack={handleAdminEditGoBack}
                 />;
-            // --- ADMIN FEATURE END ---
+           
             
             case 'forgot-password': 
                 return <ForgotPasswordView onGoBack={() => setView('auth')} 
@@ -2498,7 +2400,6 @@ const handleCheckoutClick = useCallback(() => {
                 user={user}
                 onLogout={handleLogout}
                 
-                // PASS FILTER PROPS
                 makeFilter={makeFilter}
                 setMakeFilter={setMakeFilter}
                 categoryFilter={categoryFilter}

@@ -1,4 +1,4 @@
-// backend/seeder.js
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const connectDB = require('../config/db');
@@ -11,7 +11,7 @@ const mockProducts = [
     {
         name: "Anker Nano 3 (30W) GaN Charger",
         price: 1200.00,
-        brand: "Accessories", // Mapped from 'compatibility'
+        brand: "Accessories", 
         description: "A tiny but mighty charging brick. It uses Gallium Nitride (GaN) technology to be 70% smaller than standard chargers while fast-charging an iPhone or Samsung to 50% in just 25 minutes.",
         category: "Charger",
         imageUrl: "/images/Anker Nano 3 (30W) GaN Charger.png",
@@ -210,7 +210,7 @@ const mockProducts = [
 
 const importData = async () => {
     try {
-        await Product.deleteMany(); // Clear existing products to avoid duplicates
+        await Product.deleteMany(); 
         await Product.insertMany(mockProducts);
         console.log('✅ Data Imported Successfully!');
         process.exit();

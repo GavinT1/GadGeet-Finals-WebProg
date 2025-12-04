@@ -22,7 +22,6 @@ const orderSchema = new mongoose.Schema({
     orderStatus: { 
         type: String, 
         required: true, 
-        // FIX: Added 'Delivered' to this list so the backend accepts it
         enum: ['pending', 'processing', 'completed', 'cancelled', 'Delivered'], 
         default: 'processing' 
     },
@@ -37,8 +36,6 @@ const orderSchema = new mongoose.Schema({
     totalPrice: { type: Number, required: true, default: 0.0 },
     isPaid: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },
-    
-    // FIX: Removed the duplicate definition of these two fields
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
 
